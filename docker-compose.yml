@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: ftp-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET:-your_jwt_secret_key_here}
+      - JWT_EXPIRE=7d
+      - FTP_HOST=ftp-server
+      - FTP_PORT=${FTP_PORT:-21}
+      - FTP_USER=${FTP_USER:-ftpuser}
+      - FTP_PASSWORD=${FTP_PASSWORD:-ftppassword}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:4000}
+      - MAX_FILE_SIZE=10485760
+      - UPLOAD_DIR=./uploads
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - ftp-network
+
+  vsftpd:
+    build:
+      context: .
+      dockerfile: Dockerfile.ftp
+    container_name: ftp-server
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    environment:
+      - FTP_USER_NAME=ftpuser
+      - FTP_USER_PASS=ftppassword
+      - FTP_USER_HOME=/home/ftpuser
+    volumes:
+      - ./backend/uploads:/home/vsftpd/upload
+      - ./ftp-data:/home/vsftpd/ftpuser
+    restart: unless-stopped
+    networks:
+      - ftp-network
+
+networks:
+  ftp-network:
+    driver: bridge

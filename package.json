@@ -1,0 +1,15 @@
+{
+  "name": "ftp-management-system",
+  "version": "1.0.0",
+  "description": "FTP Management System with DOS Testing",
+  "scripts": {
+    "setup": "powershell -ExecutionPolicy Bypass -File ./setup.ps1",
+    "start": "powershell -ExecutionPolicy Bypass -File ./start.ps1",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "keywords": ["ftp", "dos", "nodejs", "nextjs", "react"],
+  "author": "",
+  "license": "MIT"
+}

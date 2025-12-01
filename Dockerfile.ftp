@@ -1,0 +1,51 @@
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install vsftpd
+RUN apt-get update && \
+    apt-get install -y vsftpd && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create directories
+RUN mkdir -p /home/vsftpd /var/run/vsftpd/empty
+
+# Configure vsftpd for anonymous access
+RUN echo "listen=YES" > /etc/vsftpd.conf && \
+    echo "listen_ipv6=NO" >> /etc/vsftpd.conf && \
+    echo "anonymous_enable=YES" >> /etc/vsftpd.conf && \
+    echo "local_enable=YES" >> /etc/vsftpd.conf && \
+    echo "write_enable=YES" >> /etc/vsftpd.conf && \
+    echo "local_umask=022" >> /etc/vsftpd.conf && \
+    echo "anon_upload_enable=YES" >> /etc/vsftpd.conf && \
+    echo "anon_mkdir_write_enable=YES" >> /etc/vsftpd.conf && \
+    echo "anon_other_write_enable=YES" >> /etc/vsftpd.conf && \
+    echo "dirmessage_enable=YES" >> /etc/vsftpd.conf && \
+    echo "xferlog_enable=YES" >> /etc/vsftpd.conf && \
+    echo "connect_from_port_20=YES" >> /etc/vsftpd.conf && \
+    echo "xferlog_std_format=YES" >> /etc/vsftpd.conf && \
+    echo "chroot_local_user=NO" >> /etc/vsftpd.conf && \
+    echo "allow_writeable_chroot=YES" >> /etc/vsftpd.conf && \
+    echo "secure_chroot_dir=/var/run/vsftpd/empty" >> /etc/vsftpd.conf && \
+    echo "pam_service_name=vsftpd" >> /etc/vsftpd.conf && \
+    echo "pasv_enable=YES" >> /etc/vsftpd.conf && \
+    echo "pasv_min_port=30000" >> /etc/vsftpd.conf && \
+    echo "pasv_max_port=30009" >> /etc/vsftpd.conf && \
+    echo "pasv_address=192.168.0.102" >> /etc/vsftpd.conf && \
+    echo "port_enable=YES" >> /etc/vsftpd.conf && \
+    echo "no_anon_password=YES" >> /etc/vsftpd.conf && \
+    echo "anon_root=/home/vsftpd" >> /etc/vsftpd.conf
+
+# Create FTP user
+RUN useradd -m -d /home/vsftpd/ftpuser ftpuser && \
+    echo "ftpuser:ftppassword" | chpasswd
+
+# Set permissions
+RUN chmod 755 /home/vsftpd && \
+    mkdir -p /home/vsftpd/upload && \
+    chmod 777 /home/vsftpd/upload
+
+EXPOSE 21 30000-30009
+
+CMD ["/usr/sbin/vsftpd", "/etc/vsftpd.conf"]
